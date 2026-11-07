@@ -1,4 +1,5 @@
-import Image from "next/image";
+import Image, { getImageProps } from "next/image";
+import { preload } from "react-dom";
 import Link from "next/link";
 import { liveCatalog } from "@/lib/catalog-server";
 import { categories, HERO_SLUG } from "@/data/catalogo";
@@ -11,6 +12,23 @@ import { BestSellers } from "@/components/home/best-sellers";
 import { ProductCard } from "@/components/product-card";
 
 export const revalidate = 60;
+
+/** Foto da capa com direção de arte (recorte vertical no celular), sem baixar as duas versões. */
+function HeroPicture() {
+  const common = { alt: "Dois amigos sentados num muro de pedra numa rua de paralelepípedo, de Órbita Runner e Quadra 86", sizes: "100vw", quality: 72 };
+  const { props: { srcSet: desk } } = getImageProps({ ...common, src: "/lifestyle/hero.webp", width: 2200, height: 1228 });
+  const { props: { srcSet: mob, ...rest } } = getImageProps({ ...common, src: "/lifestyle/hero-m.webp", width: 1000, height: 1250 });
+  preload(desk!.split(" ")[0], { as: "image", imageSrcSet: desk, imageSizes: "100vw", media: "(min-width: 768px)", fetchPriority: "high" });
+  preload(mob!.split(" ")[0], { as: "image", imageSrcSet: mob, imageSizes: "100vw", media: "(max-width: 767px)", fetchPriority: "high" });
+  return (
+    <picture>
+      <source media="(min-width: 768px)" srcSet={desk} sizes="100vw" />
+      <source media="(max-width: 767px)" srcSet={mob} sizes="100vw" />
+      {/* eslint-disable-next-line jsx-a11y/alt-text */}
+      <img {...rest} fetchPriority="high" decoding="async" className="absolute inset-0 h-full w-full object-cover object-[30%_60%]" />
+    </picture>
+  );
+}
 
 export default async function Home() {
   const all = await liveCatalog();
@@ -26,18 +44,7 @@ export default async function Home() {
       {/* ───── Banner principal (foto de uso) ───── */}
       <section aria-labelledby="capa-titulo" className="relative">
         <div className="relative h-[calc(100svh-var(--barra)-32px)] min-h-[520px] max-h-[900px] overflow-hidden bg-tinta">
-          <picture>
-            <source media="(max-width: 767px)" srcSet="/lifestyle/hero-m.webp" />
-            <Image
-              src="/lifestyle/hero.webp"
-              alt="Dois amigos sentados num muro de pedra numa rua de paralelepípedo, de Órbita Runner e Quadra 86"
-              fill
-              priority
-              fetchPriority="high"
-              sizes="100vw"
-              className="object-cover object-[30%_60%]"
-            />
-          </picture>
+          <HeroPicture />
           <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-tinta/75 via-tinta/10 to-transparent" />
           <div className="absolute inset-x-0 bottom-0">
             <div className="mx-auto max-w-[1440px] px-4 pb-8 md:px-8 md:pb-12">
@@ -96,9 +103,9 @@ export default async function Home() {
           </Link>
         </div>
         <ul className="-mx-4 mt-8 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] md:mx-0 md:grid md:grid-cols-4 md:gap-6 md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden">
-          {fresh.map((p, i) => (
+          {fresh.map((p) => (
             <li key={p.slug} className="w-[72vw] max-w-[320px] shrink-0 snap-start md:w-auto md:max-w-none">
-              <ProductCard p={p} stock={p.stockBySku} priority={i < 2} sizes="(min-width: 768px) 25vw, 72vw" />
+              <ProductCard p={p} stock={p.stockBySku} sizes="(min-width: 768px) 25vw, 72vw" />
             </li>
           ))}
         </ul>
