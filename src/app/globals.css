@@ -1,0 +1,183 @@
+@import "tailwindcss";
+
+/* ───────── Tokens Vynt ───────── */
+@theme {
+  --color-papel: #f5f3ef;
+  --color-papel-2: #ece8e1;
+  --color-tinta: #151515;
+  --color-tinta-2: #4a4744;
+  --color-tinta-3: #625d57;
+  --color-telha: #a63d2a;
+  --color-telha-2: #8a3020;
+  --color-couro: #8c6a4f;
+  --color-linha: #d9d3c9;
+  --color-ok: #2f5d3a;
+
+  --font-serif: var(--font-instrument), "Times New Roman", serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --text-mega: clamp(3.4rem, 11vw, 10.5rem);
+  --text-mega--line-height: 0.88;
+  --text-titulo: clamp(2.2rem, 5.2vw, 4.4rem);
+  --text-titulo--line-height: 0.98;
+}
+
+:root {
+  color-scheme: light;
+  --barra: 64px;
+}
+
+html {
+  background: var(--color-papel);
+  color: var(--color-tinta);
+  scroll-padding-top: calc(var(--barra) + 16px);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-papel);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11";
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--color-telha);
+  color: var(--color-papel);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-telha);
+  outline-offset: 3px;
+}
+
+.num {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+@layer components {
+  .rotulo {
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--color-tinta-3);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    min-height: 3.25rem;
+    padding-inline: 1.5rem;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    border-radius: 2px;
+    transition:
+      background-color 0.35s var(--ease-expo),
+      color 0.35s var(--ease-expo),
+      transform 0.35s var(--ease-expo);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .btn-tinta {
+    background: var(--color-tinta);
+    color: var(--color-papel);
+  }
+  .btn-tinta:hover:not(:disabled) {
+    background: var(--color-telha);
+  }
+  .btn-telha {
+    background: var(--color-telha);
+    color: #fff;
+  }
+  .btn-telha:hover:not(:disabled) {
+    background: var(--color-telha-2);
+  }
+  .btn-linha {
+    border: 1px solid var(--color-tinta);
+    color: var(--color-tinta);
+  }
+  .btn-linha:hover:not(:disabled) {
+    background: var(--color-tinta);
+    color: var(--color-papel);
+  }
+
+  .link {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 100% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 0.5s var(--ease-expo);
+  }
+  .link:hover {
+    background-size: 0% 1px;
+    background-position: 100% 100%;
+  }
+
+  .campo {
+    width: 100%;
+    min-height: 3.25rem;
+    padding: 0.875rem 1rem;
+    background: #fff;
+    border: 1px solid var(--color-linha);
+    border-radius: 2px;
+    font-size: 1rem;
+    color: var(--color-tinta);
+    transition: border-color 0.25s;
+  }
+  .campo::placeholder {
+    color: #8f8a83;
+  }
+  .campo:focus {
+    outline: none;
+    border-color: var(--color-tinta);
+  }
+  .campo[aria-invalid="true"] {
+    border-color: var(--color-telha);
+  }
+
+  .opcao {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.875rem;
+    padding: 1rem;
+    border: 1px solid var(--color-linha);
+    border-radius: 2px;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color 0.25s;
+  }
+  .opcao:has(input:checked) {
+    border-color: var(--color-tinta);
+    box-shadow: inset 0 0 0 1px var(--color-tinta);
+  }
+  .opcao:has(input:focus-visible) {
+    outline: 2px solid var(--color-telha);
+    outline-offset: 2px;
+  }
+}
+
+/* conteúdo que entra animado: só some se houver JS */
+.js .surge {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .js .surge {
+    opacity: 1;
+  }
+}
+
+.mascara {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
