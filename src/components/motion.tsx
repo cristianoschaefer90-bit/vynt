@@ -97,7 +97,7 @@ export function MaskTitle({
 }
 
 /** Bloco que sobe e aparece ao entrar na tela. */
-export function Reveal({ children, className, y = 28, delay = 0 }: { children: ReactNode; className?: string; y?: number; delay?: number }) {
+export function Reveal({ children, className, y = 28, delay = 0, immediate = false }: { children: ReactNode; className?: string; y?: number; delay?: number; immediate?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   useGSAP(
     () => {
@@ -108,7 +108,7 @@ export function Reveal({ children, className, y = 28, delay = 0 }: { children: R
         gsap.fromTo(
           el,
           { opacity: 0, y },
-          { opacity: 1, y: 0, duration: 1.1, ease: EXPO, delay, scrollTrigger: { trigger: el, start: "top 90%", once: true } },
+          { opacity: 1, y: 0, duration: 1.1, ease: EXPO, delay, scrollTrigger: immediate ? undefined : { trigger: el, start: "top 95%", once: true } },
         );
       });
       mm.add("(prefers-reduced-motion: reduce)", () => {

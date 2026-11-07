@@ -51,6 +51,8 @@ export interface Product {
   variants: Variant[];
   reviews: Review[];
   pairsWith: string[];
+  /** foto de estilo de vida (pessoa usando) */
+  lifestyle?: string;
 }
 
 export const SIZES = [34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44] as const;
@@ -132,6 +134,7 @@ const seeds: Seed[] = [
   },
   {
     slug: "trama",
+    lifestyle: "/lifestyle/casual.webp",
     name: "Trama Low",
     category: "casual",
     short: "Couro liso, sola vulcanizada caramelo, costura dupla.",
@@ -152,6 +155,7 @@ const seeds: Seed[] = [
   },
   {
     slug: "basalto",
+    lifestyle: "/lifestyle/streetwear.webp",
     name: "Basalto High",
     category: "streetwear",
     short: "Cano alto em camurça com recortes sobrepostos.",
@@ -188,6 +192,7 @@ const seeds: Seed[] = [
   },
   {
     slug: "pulso",
+    lifestyle: "/lifestyle/corrida.webp",
     name: "Pulso 2",
     category: "corrida",
     short: "Leve, 240 g, drop de 8 mm.",
@@ -224,6 +229,7 @@ const seeds: Seed[] = [
   },
   {
     slug: "bloco",
+    lifestyle: "/lifestyle/bloco.webp",
     name: "Bloco Chunky",
     category: "streetwear",
     short: "Solado em camadas de 5 cm, couro e telha.",
@@ -255,6 +261,7 @@ const seeds: Seed[] = [
   },
   {
     slug: "neblina",
+    lifestyle: "/lifestyle/neblina.webp",
     name: "Neblina Knit",
     category: "corrida",
     short: "Cabedal em tricô sem costura, ajuste de meia.",
@@ -271,6 +278,7 @@ const seeds: Seed[] = [
   },
   {
     slug: "asfalto",
+    lifestyle: "/lifestyle/asfalto.webp",
     name: "Asfalto Skate",
     category: "streetwear",
     short: "Lona reforçada, camurça na biqueira, sola caramelo.",
@@ -286,6 +294,7 @@ const seeds: Seed[] = [
   },
   {
     slug: "linha",
+    lifestyle: "/lifestyle/linha.webp",
     name: "Linha Court",
     category: "casual",
     short: "Couro conhaque, perfil fino, uma costura só.",

@@ -63,7 +63,7 @@ export async function Listing({ category, searchParams }: { category?: CategoryS
             <ul className="grid grid-cols-2 gap-x-3 gap-y-10 md:gap-x-6 lg:grid-cols-3 lg:pt-3">
               {list.map((p, i) => (
                 <li key={p.slug}>
-                  <ProductCard p={p} priority={i < 3} outOfStock={!p.inStock} sizes="(min-width: 1024px) 24vw, 46vw" />
+                  <ProductCard p={p} stock={p.stockBySku} priority={i < 3} outOfStock={!p.inStock} sizes="(min-width: 1024px) 24vw, 46vw" />
                 </li>
               ))}
             </ul>

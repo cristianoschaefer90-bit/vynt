@@ -1,53 +1,66 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/data/catalogo";
-import { formatBRL } from "@/lib/money";
+import { formatBRL, installments } from "@/lib/money";
 import { STORE } from "@/lib/config";
+import { QuickAdd } from "./quick-add";
 
 export function ProductCard({
   p,
   priority,
   sizes = "(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 90vw",
   outOfStock,
+  stock,
 }: {
   p: Product & { priceCents: number };
   priority?: boolean;
   sizes?: string;
   outOfStock?: boolean;
+  stock?: Record<string, number>;
 }) {
   const pix = Math.round(p.priceCents * (1 - STORE.pixDiscountPct / 100));
+  const parc = installments(p.priceCents, STORE.maxInstallments, STORE.minInstallmentCents);
+  const off = p.compareAtCents ? Math.round((1 - p.priceCents / p.compareAtCents) * 100) : 0;
+  const hover = p.lifestyle ?? p.colors[0].images[1];
+
   return (
-    <Link href={`/p/${p.slug}`} className="group block">
+    <div className="group relative">
       <div className="relative aspect-[4/5] overflow-hidden bg-papel-2">
-        <Image
-          src={p.colors[0].images[0]}
-          alt=""
-          fill
-          priority={priority}
-          sizes={sizes}
-          className="object-cover transition-transform duration-[1.2s] ease-expo group-hover:scale-[1.04]"
-        />
-        <Image
-          src={p.colors[0].images[1]}
-          alt=""
-          fill
-          sizes={sizes}
-          className="object-cover opacity-0 transition-opacity duration-700 ease-expo group-hover:opacity-100 max-md:hidden"
-        />
-        {(p.badge || outOfStock) && (
-          <span className="absolute left-3 top-3 bg-papel px-2 py-1 text-[0.6875rem] uppercase tracking-[0.12em]">
-            {outOfStock ? "Esgotado" : p.badge === "novo" ? "Novo" : "Mais vendido"}
-          </span>
-        )}
+        <Link href={`/p/${p.slug}`} className="absolute inset-0 block" tabIndex={-1} aria-hidden>
+          <Image
+            src={p.colors[0].images[0]}
+            alt=""
+            fill
+            priority={priority}
+            sizes={sizes}
+            className="object-cover transition-transform duration-[1.2s] ease-expo group-hover:scale-[1.04]"
+          />
+          <Image src={hover} alt="" fill sizes={sizes} className="object-cover opacity-0 transition-opacity duration-700 ease-expo group-hover:opacity-100 max-md:hidden" />
+        </Link>
+        <div className="pointer-events-none absolute left-3 top-3 flex flex-col items-start gap-1">
+          {outOfStock ? (
+            <span className="bg-papel px-2 py-1 text-[0.6875rem] uppercase tracking-[0.12em]">Esgotado</span>
+          ) : (
+            <>
+              {p.badge && <span className="bg-papel px-2 py-1 text-[0.6875rem] uppercase tracking-[0.12em]">{p.badge === "novo" ? "Novo" : "Mais vendido"}</span>}
+              {off > 0 && <span className="bg-telha px-2 py-1 text-[0.6875rem] uppercase tracking-[0.12em] text-white">−{off}%</span>}
+            </>
+          )}
+        </div>
+        {!outOfStock && <QuickAdd name={p.name} variants={p.variants} stock={stock} />}
       </div>
-      <div className="mt-3 sm:flex sm:items-baseline sm:justify-between sm:gap-3">
-        <h3 className="font-medium leading-snug">{p.name}</h3>
-        <p className="num shrink-0">{formatBRL(p.priceCents)}</p>
-      </div>
-      <div className="mt-0.5 text-sm text-tinta-3 sm:flex sm:items-baseline sm:justify-between sm:gap-3">
-        <p className="max-sm:hidden">{p.colors[0].name}</p>
-        <p className="num shrink-0">{formatBRL(pix)} no Pix</p>
-      </div>
-    </Link>
+      <Link href={`/p/${p.slug}`} className="block">
+        <div className="mt-3 sm:flex sm:items-baseline sm:justify-between sm:gap-3">
+          <h3 className="font-medium leading-snug group-hover:underline group-hover:underline-offset-4">{p.name}</h3>
+          <p className="num shrink-0">
+            {p.compareAtCents && <span className="mr-2 text-sm text-tinta-3 line-through">{formatBRL(p.compareAtCents)}</span>}
+            {formatBRL(p.priceCents)}
+          </p>
+        </div>
+        <p className="num mt-0.5 text-sm text-tinta-3">
+          {formatBRL(pix)} no Pix · ou {parc.n}× de {formatBRL(parc.each)}
+        </p>
+      </Link>
+    </div>
   );
 }

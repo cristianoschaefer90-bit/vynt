@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Header } from "@/components/header";
+import { Announcement } from "@/components/announcement";
 import { Footer } from "@/components/footer";
 import { BagSheetLazy } from "@/components/bag-sheet-lazy";
 import { SITE_URL, STORE } from "@/lib/config";
@@ -68,6 +69,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <a href="#conteudo" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:bg-tinta focus:px-4 focus:py-3 focus:text-papel">
           Pular para o conteúdo
         </a>
+        <Announcement />
         <Header />
         <main id="conteudo">{children}</main>
         <Footer />

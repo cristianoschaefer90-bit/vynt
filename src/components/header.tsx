@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cart, useCart, useHydrated } from "@/lib/cart";
 import { categories } from "@/data/catalogo";
+import { Search } from "./search";
 
 export function Header() {
   const count = useCart((s) => s.lines.reduce((n, l) => n + l.qty, 0));
@@ -49,6 +50,7 @@ export function Header() {
         )}
 
         <div className="flex items-center gap-1">
+          {!checkout && <Search />}
           {!checkout && (
             <Link href="/conta" className="hidden min-h-11 items-center px-3 text-sm hover:text-telha sm:inline-flex">
               Minha conta

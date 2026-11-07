@@ -181,3 +181,12 @@ body {
   padding-bottom: 0.08em;
   margin-bottom: -0.08em;
 }
+
+@keyframes faixa {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}

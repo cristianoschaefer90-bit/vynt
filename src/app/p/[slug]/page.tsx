@@ -84,7 +84,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
       <div className="grid gap-8 lg:grid-cols-12 lg:gap-12">
         <div className="-mx-4 md:mx-0 lg:col-span-7">
-          <Gallery images={p.colors[0].images} name={p.name} />
+          <Gallery images={p.lifestyle ? [...p.colors[0].images.slice(0, 1), p.lifestyle, ...p.colors[0].images.slice(1)] : p.colors[0].images} name={p.name} />
         </div>
         <div className="lg:col-span-5">
           <div className="lg:sticky lg:top-[calc(var(--barra)+24px)]">
@@ -137,7 +137,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           <ul className="mt-8 grid grid-cols-2 gap-x-3 gap-y-10 md:grid-cols-3 md:gap-x-6">
             {pairs.map((x) => (
               <li key={x.slug} className="last:max-md:hidden">
-                <ProductCard p={x} sizes="(min-width: 768px) 30vw, 46vw" />
+                <ProductCard p={x} stock={x.stockBySku} sizes="(min-width: 768px) 30vw, 46vw" />
               </li>
             ))}
           </ul>

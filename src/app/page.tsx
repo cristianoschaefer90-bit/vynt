@@ -2,13 +2,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { liveCatalog } from "@/lib/catalog-server";
 import { categories, HERO_SLUG } from "@/data/catalogo";
-import { formatBRL, installments } from "@/lib/money";
+import { formatBRL } from "@/lib/money";
 import { STORE } from "@/lib/config";
 import { waLink } from "@/lib/whatsapp";
 import { CountUp, Magnetic, MaskTitle, Reveal } from "@/components/motion";
 import { Explode } from "@/components/home/explode";
 import { BestSellers } from "@/components/home/best-sellers";
-import { HeroAdd } from "@/components/home/hero-add";
+import { ProductCard } from "@/components/product-card";
 
 export const revalidate = 60;
 
@@ -19,97 +19,117 @@ export default async function Home() {
   const sold = all.reduce((s, p) => s + p.sold, 0);
   const reviews = all.flatMap((p) => p.reviews);
   const avg = reviews.reduce((s, r) => s + r.rating, 0) / Math.max(1, reviews.length);
-  const parc = installments(hero.priceCents, STORE.maxInstallments, STORE.minInstallmentCents);
-  const pix = Math.round(hero.priceCents * (1 - STORE.pixDiscountPct / 100));
+  const fresh = [...all].sort((a, b) => Number(b.badge === "novo") - Number(a.badge === "novo") || a.sold - b.sold).slice(0, 4);
 
   return (
     <>
-      {/* ───── Capa ───── */}
-      <section aria-labelledby="capa-titulo" className="mx-auto max-w-[1440px] px-4 md:px-8">
-        <div className="flex items-center justify-between border-b border-tinta py-3 text-[0.6875rem] uppercase tracking-[0.14em]">
-          <span>Edição nº 11 · Novembro</span>
-          <span className="hidden sm:inline">Vale do Paranhana, RS</span>
-          <span>Entrega hoje até 16h</span>
-        </div>
-
-        <div className="grid gap-x-8 pt-8 lg:grid-cols-12 lg:pt-10">
-          <div className="lg:col-span-7">
-            <MaskTitle as="h1" immediate className="font-serif text-mega tracking-[-0.02em]">
-              <span id="capa-titulo">Pediu agora, calça hoje.</span>
-            </MaskTitle>
-            <Reveal delay={0.25} className="mt-6 max-w-md text-lg text-tinta-2">
-              <p>
-                Tênis originais escolhidos a dedo, entregues por motoboy em {STORE.city}, Igrejinha e Taquara. Não serviu? A gente troca o número na sua porta.
-              </p>
-            </Reveal>
-          </div>
-
-          <div className="relative mt-10 lg:col-span-5 lg:mt-0">
-            <Link href={`/p/${hero.slug}`} className="group relative block aspect-[4/5] overflow-hidden bg-papel-2">
-              <Image
-                src={hero.colors[0].images[0]}
-                alt={`${hero.name} em ${hero.colors[0].name}, vista lateral`}
-                fill
-                priority
-                fetchPriority="high"
-                sizes="(min-width: 1024px) 40vw, 100vw"
-                className="object-cover transition-transform duration-[1.4s] ease-expo group-hover:scale-[1.03]"
-              />
-              <span className="absolute left-4 top-4 bg-papel px-2 py-1 text-[0.6875rem] uppercase tracking-[0.12em]">Capa</span>
-            </Link>
-          </div>
-        </div>
-
-        <div className="mt-8 grid gap-6 border-t border-linha pt-6 lg:grid-cols-12">
-          <div className="lg:col-span-7">
-            <p className="rotulo">Produto da capa</p>
-            <p className="mt-1 font-serif text-4xl">{hero.name}</p>
-            <p className="mt-1 text-tinta-2">{hero.short}</p>
-          </div>
-          <div className="flex flex-col gap-4 lg:col-span-5">
-            <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-              <p className="num text-3xl">{formatBRL(hero.priceCents)}</p>
-              {hero.compareAtCents && <p className="num text-tinta-3 line-through">{formatBRL(hero.compareAtCents)}</p>}
-              <p className="num w-full text-sm text-tinta-2">
-                {formatBRL(pix)} no Pix · ou {parc.n}× de {formatBRL(parc.each)} sem juros
-              </p>
+      {/* ───── Banner principal (foto de uso) ───── */}
+      <section aria-labelledby="capa-titulo" className="relative">
+        <div className="relative h-[calc(100svh-var(--barra)-32px)] min-h-[520px] max-h-[900px] overflow-hidden bg-tinta">
+          <picture>
+            <source media="(max-width: 767px)" srcSet="/lifestyle/hero-m.webp" />
+            <Image
+              src="/lifestyle/hero.webp"
+              alt="Dois amigos sentados num muro de pedra numa rua de paralelepípedo, de Órbita Runner e Quadra 86"
+              fill
+              priority
+              fetchPriority="high"
+              sizes="100vw"
+              className="object-cover object-[30%_60%]"
+            />
+          </picture>
+          <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-tinta/75 via-tinta/10 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0">
+            <div className="mx-auto max-w-[1440px] px-4 pb-8 md:px-8 md:pb-12">
+              <p className="rotulo !text-papel/80">Edição nº 11 · Vale do Paranhana</p>
+              <MaskTitle as="h1" immediate className="mt-3 max-w-4xl font-serif text-mega tracking-[-0.02em] text-papel">
+                <span id="capa-titulo">Pediu agora, calça hoje.</span>
+              </MaskTitle>
+              <Reveal immediate delay={0.3} className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Magnetic>
+                  <Link href="/loja?ordem=novos" className="btn bg-papel text-tinta hover:bg-telha hover:text-white">
+                    Ver lançamentos
+                  </Link>
+                </Magnetic>
+                <Link href={`/p/${hero.slug}`} className="btn border border-papel/60 text-papel hover:bg-papel hover:text-tinta">
+                  {hero.name} · {formatBRL(hero.priceCents)}
+                </Link>
+              </Reveal>
             </div>
-            <HeroAdd product={hero} />
           </div>
         </div>
       </section>
 
+      {/* ───── Coleções ───── */}
+      <section aria-label="Coleções" className="mx-auto mt-4 grid max-w-[1440px] gap-4 px-4 md:mt-6 md:grid-cols-3 md:px-8">
+        {[
+          { slug: "casual", img: "/lifestyle/casual.webp", kicker: "Para o dia todo", alt: "Tênis Trama Low sobre uma cadeira de madeira ao lado de uma caneca de café" },
+          { slug: "streetwear", img: "/lifestyle/streetwear.webp", kicker: "Cano, volume, camurça", alt: "Pessoa sentada numa escadaria com grafite, de Basalto High" },
+          { slug: "corrida", img: "/lifestyle/corrida.webp", kicker: "Para o asfalto e o chão batido", alt: "Corredora numa estrada de chão à beira do rio, de Pulso 2" },
+        ].map((c) => {
+          const cat = categories.find((x) => x.slug === c.slug)!;
+          const n = all.filter((p) => p.category === c.slug).length;
+          return (
+            <Link key={c.slug} href={`/loja/${c.slug}`} className="group relative block aspect-[4/5] overflow-hidden bg-tinta md:aspect-[3/4]">
+              <Image src={c.img} alt={c.alt} fill sizes="(min-width: 768px) 33vw, 100vw" className="object-cover transition-transform duration-[1.4s] ease-expo group-hover:scale-[1.05]" />
+              <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-tinta/70 via-transparent to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-5 text-papel">
+                <div>
+                  <p className="rotulo !text-papel/80">{c.kicker}</p>
+                  <h2 className="mt-1 font-serif text-5xl leading-none">{cat.name}</h2>
+                </div>
+                <span className="num shrink-0 text-sm underline-offset-4 group-hover:underline">{n} modelos →</span>
+              </div>
+            </Link>
+          );
+        })}
+      </section>
+
+      {/* ───── Lançamentos ───── */}
+      <section aria-labelledby="lancamentos" className="mx-auto mt-24 max-w-[1440px] px-4 md:px-8">
+        <div className="flex items-end justify-between gap-6 border-b border-tinta pb-3">
+          <h2 id="lancamentos" className="font-serif text-titulo">
+            Lançamentos
+          </h2>
+          <Link href="/loja?ordem=novos" className="link shrink-0 text-sm">
+            Ver tudo
+          </Link>
+        </div>
+        <ul className="-mx-4 mt-8 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] md:mx-0 md:grid md:grid-cols-4 md:gap-6 md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden">
+          {fresh.map((p, i) => (
+            <li key={p.slug} className="w-[72vw] max-w-[320px] shrink-0 snap-start md:w-auto md:max-w-none">
+              <ProductCard p={p} stock={p.stockBySku} priority={i < 2} sizes="(min-width: 768px) 25vw, 72vw" />
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* ───── Escolha por modelo ───── */}
+      <section aria-labelledby="modelo" className="mx-auto mt-24 max-w-[1440px] px-4 md:px-8">
+        <h2 id="modelo" className="rotulo !text-tinta">
+          Escolha por modelo
+        </h2>
+        <ul className="-mx-4 mt-4 flex gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none] md:mx-0 md:grid md:grid-cols-6 md:px-0 lg:grid-cols-12 [&::-webkit-scrollbar]:hidden">
+          {all.map((p) => (
+            <li key={p.slug} className="w-28 shrink-0 md:w-auto">
+              <Link href={`/p/${p.slug}`} className="group block text-center">
+                <span className="relative block aspect-square overflow-hidden bg-papel-2">
+                  <Image src={p.colors[0].thumb} alt="" fill sizes="120px" className="object-contain transition-transform duration-700 ease-expo group-hover:scale-110" />
+                </span>
+                <span className="mt-2 block text-xs leading-tight group-hover:underline">{p.name}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       {/* ───── Momento uau ───── */}
-      <div className="mt-20 md:mt-28">
+      <div className="mt-24 md:mt-32">
         <Explode priceLabel={formatBRL(hero.priceCents)} />
       </div>
 
       {/* ───── Mais vendidos ───── */}
       <BestSellers items={best} />
-
-      {/* ───── Editorial: a rua ───── */}
-      <section aria-labelledby="rua-titulo" className="relative mt-16">
-        <picture>
-          <source media="(max-width: 767px)" srcSet="/editorial/rua-m.webp" />
-          <Image
-            src="/editorial/rua.webp"
-            alt="Pessoa caminhando de Órbita numa rua de paralelepípedo, com morros e neblina ao fundo"
-            width={2200}
-            height={1228}
-            sizes="100vw"
-            className="h-[78svh] w-full object-cover md:h-auto md:max-h-[92svh]"
-          />
-        </picture>
-        <div className="mx-auto grid max-w-[1440px] gap-6 px-4 pt-6 md:grid-cols-12 md:px-8">
-          <p className="rotulo md:col-span-3">Foto ilustrativa</p>
-          <MaskTitle className="font-serif text-titulo md:col-span-6">
-            <span id="rua-titulo">Pediu às 14h. Às 16h40 já estava na rua.</span>
-          </MaskTitle>
-          <Reveal className="text-tinta-2 md:col-span-3">
-            <p>Sem esperar semana de transportadora e sem viagem até Porto Alegre. O pedido sai da loja em {STORE.city} pelo motoboy.</p>
-          </Reveal>
-        </div>
-      </section>
 
       {/* ───── Como funciona (lista editorial, não cards) ───── */}
       <section aria-labelledby="servico-titulo" className="mx-auto mt-28 max-w-[1440px] px-4 md:px-8">
@@ -140,39 +160,6 @@ export default async function Home() {
             ))}
           </ol>
         </div>
-      </section>
-
-      {/* ───── Índice de categorias ───── */}
-      <section aria-labelledby="indice-titulo" className="mx-auto mt-28 max-w-[1440px] px-4 md:px-8">
-        <div className="flex items-end justify-between border-b border-tinta pb-3">
-          <h2 id="indice-titulo" className="rotulo !text-tinta">
-            Índice
-          </h2>
-          <span className="rotulo num">{all.length} modelos</span>
-        </div>
-        <ul>
-          {categories.map((c, i) => {
-            const items = all.filter((p) => p.category === c.slug);
-            const cover = items[0];
-            return (
-              <li key={c.slug} className="border-b border-linha">
-                <Link href={`/loja/${c.slug}`} className="group grid grid-cols-[2.5rem_1fr_auto] items-center gap-4 py-6 md:grid-cols-[4rem_1fr_1fr_auto] md:py-8">
-                  <span className="num text-sm text-tinta-3">{String(i + 1).padStart(2, "0")}</span>
-                  <span className="font-serif text-5xl transition-colors duration-500 group-hover:text-telha md:text-7xl">{c.name}</span>
-                  <span className="hidden text-tinta-2 md:block">{c.tagline}</span>
-                  <span className="flex items-center gap-4">
-                    <span className="num text-sm text-tinta-3">{items.length}</span>
-                    {cover && (
-                      <span className="relative hidden size-20 overflow-hidden bg-papel-2 sm:block">
-                        <Image src={cover.colors[0].thumb} alt="" fill sizes="80px" className="object-contain transition-transform duration-700 ease-expo group-hover:scale-110" />
-                      </span>
-                    )}
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
       </section>
 
       {/* ───── Prova social ───── */}

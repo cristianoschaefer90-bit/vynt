@@ -7,7 +7,7 @@ import { gsap, useGSAP } from "@/components/motion";
 import type { Product } from "@/data/catalogo";
 
 /** Galeria horizontal: pin no desktop (≥1024, sem reduced-motion); no celular, arrasta com snap. */
-export function BestSellers({ items }: { items: (Product & { priceCents: number })[] }) {
+export function BestSellers({ items }: { items: (Product & { priceCents: number; stockBySku?: Record<string, number> })[] }) {
   const root = useRef<HTMLElement>(null);
   useGSAP(
     () => {
@@ -52,7 +52,7 @@ export function BestSellers({ items }: { items: (Product & { priceCents: number 
         {items.map((p, i) => (
           <div key={p.slug} className="w-[78vw] max-w-[360px] shrink-0 snap-start sm:w-[44vw] lg:w-[25vw] lg:max-w-[380px]">
             <p className="num mb-2 text-xs text-tinta-3">{String(i + 1).padStart(2, "0")}</p>
-            <ProductCard p={p} sizes="(min-width: 1024px) 25vw, 78vw" />
+            <ProductCard p={p} stock={p.stockBySku} sizes="(min-width: 1024px) 25vw, 78vw" />
           </div>
         ))}
       </div>

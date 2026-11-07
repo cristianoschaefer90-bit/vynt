@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRef, useState } from "react";
 
-const ALT = ["vista lateral", "detalhe da biqueira e do cabedal", "detalhe do calcanhar"];
+
 
 /** Desktop: galeria vertical. Celular: carrossel com snap e indicador. */
 export function Gallery({ images, name }: { images: string[]; name: string }) {
@@ -27,7 +27,7 @@ export function Gallery({ images, name }: { images: string[]; name: string }) {
           <div key={src} className="relative aspect-[4/5] w-full shrink-0 snap-center bg-papel-2">
             <Image
               src={src}
-              alt={`${name}, ${ALT[i] ?? "foto"}`}
+              alt={src.includes("/lifestyle/") ? `${name} em uso` : `${name}, ${["vista lateral", "detalhe da frente", "detalhe do calcanhar"][src.endsWith("1.webp") ? 0 : src.endsWith("2.webp") ? 1 : 2]}`}
               fill
               priority={i === 0}
               fetchPriority={i === 0 ? "high" : undefined}
