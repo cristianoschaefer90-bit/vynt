@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { variantBySku } from "@/data/catalogo";
 import { STORE } from "@/lib/config";
 import { couponDiscount, findCoupon } from "@/lib/coupons";
+import { qtyDiscount } from "@/lib/promo";
 import { cleanCep, lookupCep, optionsFor, PICKUP, type ShippingOption } from "@/lib/shipping";
 import { createOrder, effectiveProduct, StockError, stockOf, type OrderItem } from "@/lib/store";
 import { rateLimit } from "@/lib/rate-limit";
@@ -68,7 +69,9 @@ export async function checkCoupon(code: string, cart: unknown) {
   const c = findCoupon(code);
   if (!c) return { ok: false as const, error: "Cupom inválido ou expirado." };
   const { subtotalCents } = await priceCart(parsed.data);
-  const off = couponDiscount(c, subtotalCents);
+  const { items } = await priceCart(parsed.data);
+  const qty = items.reduce((n, i) => n + i.qty, 0);
+  const off = couponDiscount(c, subtotalCents - qtyDiscount(subtotalCents, qty));
   if (!off) return { ok: false as const, error: `Esse cupom vale para compras a partir de R$ ${(c.minSubtotalCents / 100).toFixed(0)}.` };
   return { ok: true as const, code: c.code, label: c.label, discountCents: off };
 }
@@ -132,9 +135,10 @@ export async function placeOrder(input: unknown): Promise<PlaceOrderResult> {
   }
 
   const coupon = findCoupon(d.coupon);
-  const couponCents = coupon ? couponDiscount(coupon, subtotalCents) : 0;
-  const pixCents = d.payment === "pix" ? Math.floor(((subtotalCents - couponCents) * STORE.pixDiscountPct) / 100) : 0;
-  const totalCents = subtotalCents - couponCents - pixCents + shipping.priceCents;
+  const qtyCents = qtyDiscount(subtotalCents, items.reduce((n, i) => n + i.qty, 0));
+  const couponCents = coupon ? couponDiscount(coupon, subtotalCents - qtyCents) : 0;
+  const pixCents = d.payment === "pix" ? Math.floor(((subtotalCents - qtyCents - couponCents) * STORE.pixDiscountPct) / 100) : 0;
+  const totalCents = subtotalCents - qtyCents - couponCents - pixCents + shipping.priceCents;
 
   try {
     const order = await createOrder({
@@ -145,6 +149,7 @@ export async function placeOrder(input: unknown): Promise<PlaceOrderResult> {
       subtotalCents,
       couponCode: couponCents ? coupon!.code : undefined,
       couponCents,
+      qtyCents,
       pixCents,
       shippingCents: shipping.priceCents,
       totalCents,

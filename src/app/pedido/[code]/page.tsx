@@ -153,6 +153,12 @@ export default async function Pedido({ params, searchParams }: { params: Promise
                 <dt>Subtotal</dt>
                 <dd className="num">{formatBRL(order.subtotalCents)}</dd>
               </div>
+              {(order.qtyCents ?? 0) > 0 && (
+                <div className="flex justify-between text-ok">
+                  <dt>Leve 2</dt>
+                  <dd className="num">− {formatBRL(order.qtyCents!)}</dd>
+                </div>
+              )}
               {order.couponCents > 0 && (
                 <div className="flex justify-between text-ok">
                   <dt>Cupom {order.couponCode}</dt>

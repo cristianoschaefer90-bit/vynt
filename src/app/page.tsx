@@ -10,6 +10,8 @@ import { CountUp, Magnetic, MaskTitle, Reveal } from "@/components/motion";
 import { Explode } from "@/components/home/explode";
 import { BestSellers } from "@/components/home/best-sellers";
 import { ProductCard } from "@/components/product-card";
+import { FirstCoupon } from "@/components/home/first-coupon";
+import { SameDay } from "@/components/same-day";
 
 export const revalidate = 60;
 
@@ -91,6 +93,12 @@ export default async function Home() {
           );
         })}
       </section>
+
+      {/* ───── Cupom de primeira compra ───── */}
+      <div className="mx-auto mt-16 max-w-[1440px] px-4 md:px-8">
+        <FirstCoupon />
+        <SameDay className="mt-3 text-sm text-tinta-2" />
+      </div>
 
       {/* ───── Lançamentos ───── */}
       <section aria-labelledby="lancamentos" className="mx-auto mt-24 max-w-[1440px] px-4 md:px-8">

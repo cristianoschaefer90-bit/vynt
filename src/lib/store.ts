@@ -48,6 +48,8 @@ export interface Order {
   subtotalCents: number;
   couponCode?: string;
   couponCents: number;
+  /** desconto "leve 2" */
+  qtyCents?: number;
   pixCents: number;
   shippingCents: number;
   totalCents: number;

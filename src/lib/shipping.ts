@@ -57,7 +57,8 @@ const UF_REGION: Record<string, keyof typeof REGION> = {
   PA: "NORTE", AP: "NORTE", AM: "NORTE", RR: "NORTE", RO: "NORTE", AC: "NORTE", TO: "NORTE",
 };
 
-export const FREE_SHIPPING_CENTS = 39900; // frete Correios PAC grátis acima disso (RS e SC) — TROCAR
+import { FREE_SHIPPING_CENTS } from "./promo";
+export { FREE_SHIPPING_CENTS };
 
 export function cleanCep(cep: string) {
   const d = cep.replace(/\D/g, "");

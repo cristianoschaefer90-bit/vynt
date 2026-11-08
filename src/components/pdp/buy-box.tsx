@@ -11,6 +11,9 @@ import { quoteShipping } from "@/app/actions/checkout";
 import { Magnetic } from "@/components/motion";
 import { SizePicker } from "@/components/size-picker";
 import { useLive } from "@/components/use-cart-totals";
+import { SameDay } from "@/components/same-day";
+import { SizeGuide } from "./size-guide";
+import { QTY_PROMO } from "@/lib/promo";
 
 type Quote = Awaited<ReturnType<typeof quoteShipping>>;
 
@@ -62,9 +65,7 @@ export function BuyBox({ slug, name, variants, stock, priceCents }: { slug: stri
               <span>
                 Numeração{size ? <span className="ml-1 font-medium">· {size}</span> : null}
               </span>
-              <a className="text-tinta-3 underline underline-offset-4" href={waLink(`Oi, Vynt! Qual número do ${name} eu pego? Uso __ em outro tênis.`)} target="_blank" rel="noopener noreferrer">
-                Dúvida no número?
-              </a>
+              <SizeGuide />
             </div>
             <SizePicker variants={variants} stock={st} value={sku} onChange={(s) => { setSku(s); setErr(false); }} error={err} />
           </div>
@@ -80,6 +81,16 @@ export function BuyBox({ slug, name, variants, stock, priceCents }: { slug: stri
           </div>
         </>
       )}
+
+      <div className="space-y-1 border-l-2 border-telha pl-3 text-sm">
+        <SameDay />
+        <p className="text-tinta-2">
+          Leve 2 pares e ganhe <strong className="font-medium">{QTY_PROMO.pct}%</strong> nos dois.{" "}
+          <a className="underline underline-offset-4" href={waLink(`Oi, Vynt! Qual número do ${name} eu pego? Uso __ em outro tênis.`)} target="_blank" rel="noopener noreferrer">
+            Dúvida no número? Chama no WhatsApp
+          </a>
+        </p>
+      </div>
 
       <form
         className="border-t border-linha pt-5"

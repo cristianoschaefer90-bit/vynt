@@ -9,7 +9,21 @@ export function Footer() {
   const path = usePathname();
   if (path.startsWith("/admin") || path.startsWith("/checkout")) return null;
   return (
-    <footer className="mt-24 bg-tinta text-papel">
+    <footer className="mt-24">
+      <ul aria-label="Por que comprar na Vynt" className="mx-auto grid max-w-[1440px] grid-cols-2 gap-px border-y border-linha bg-linha md:grid-cols-4">
+        {[
+          ["Original com nota", "Todos os pares com nota fiscal."],
+          ["Troca grátis", `Em ${STORE.freeExchangeDays} dias, sem burocracia.`],
+          ["Entrega hoje", "Motoboy no Vale do Paranhana."],
+          ["Compra segura", "Pagamento por Pix ou link oficial."],
+        ].map(([t, d]) => (
+          <li key={t} className="bg-papel px-4 py-6 md:px-8">
+            <p className="font-medium">{t}</p>
+            <p className="mt-1 text-sm text-tinta-3">{d}</p>
+          </li>
+        ))}
+      </ul>
+      <div className="bg-tinta text-papel">
       <div className="mx-auto grid max-w-[1440px] gap-12 px-4 pb-10 pt-16 md:grid-cols-12 md:px-8">
         <div className="md:col-span-6">
           <p className="font-serif text-[clamp(3rem,9vw,7rem)] leading-[0.9]">Vynt</p>
@@ -34,10 +48,18 @@ export function Footer() {
             Trocas e devoluções
           </Link>
         </div>
+        <div className="border-t border-papel/15 pt-8 md:col-span-12 md:flex md:items-center md:justify-between md:gap-8">
+          <p className="font-serif text-3xl">Lista VIP no WhatsApp</p>
+          <p className="mt-2 max-w-md text-sm text-papel/75 md:mt-0">Lançamentos e reposição de numeração antes de todo mundo. Uma mensagem por semana, no máximo.</p>
+          <a className="btn mt-4 bg-papel text-tinta hover:bg-telha hover:text-white md:mt-0" href={waLink("Oi, Vynt! Quero entrar na lista VIP de lançamentos.")} target="_blank" rel="noopener noreferrer">
+            Entrar na lista
+          </a>
+        </div>
         <p className="text-xs text-papel/60 md:col-span-12">
           © {new Date().getFullYear()} Vynt.{" "}
           {STORE.demo && "Loja de demonstração: produtos, preços e avaliações são exemplos. Fotos ilustrativas."}
         </p>
+      </div>
       </div>
     </footer>
   );

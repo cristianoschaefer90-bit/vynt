@@ -4,7 +4,8 @@ import { usePathname } from "next/navigation";
 import { STORE } from "@/lib/config";
 
 const ITEMS = [
-  `Entrega hoje em ${STORE.city}`,
+  `Pediu até 16h, recebe hoje em ${STORE.city}`,
+  "Leve 2 pares, ganhe 10%",
   "Troca de número grátis",
   `${STORE.pixDiscountPct}% de desconto no Pix`,
   `${STORE.maxInstallments}× sem juros no cartão`,

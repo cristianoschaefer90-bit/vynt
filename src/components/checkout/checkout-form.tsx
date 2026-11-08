@@ -8,6 +8,7 @@ import { variantBySku } from "@/data/catalogo";
 import { cart, useCart, useHydrated } from "@/lib/cart";
 import { formatBRL, installments } from "@/lib/money";
 import { STORE } from "@/lib/config";
+import { QTY_PROMO } from "@/lib/promo";
 import { placeOrder, quoteShipping } from "@/app/actions/checkout";
 import { CouponField } from "@/components/coupon-field";
 import { useCartTotals } from "@/components/use-cart-totals";
@@ -100,7 +101,7 @@ export function CheckoutForm() {
   const deliveryOpts = quote?.options.filter((o) => o.method !== "retirada") ?? [];
   const chosen = mode === "retirada" ? { priceCents: 0, label: "Retirar na loja", eta: "Pronto em 1 hora" } : deliveryOpts.find((o) => o.method === method);
   const shipping = chosen?.priceCents ?? 0;
-  const afterCoupon = totals.subtotal - totals.coupon;
+  const afterCoupon = totals.net;
   const pixOff = pay === "pix" ? Math.floor((afterCoupon * STORE.pixDiscountPct) / 100) : 0;
   const total = afterCoupon - pixOff + shipping;
   const parc = installments(afterCoupon + shipping, STORE.maxInstallments, STORE.minInstallmentCents);
@@ -421,6 +422,12 @@ export function CheckoutForm() {
               <dt>Subtotal</dt>
               <dd className="num">{formatBRL(totals.subtotal)}</dd>
             </div>
+            {totals.qty > 0 && (
+              <div className="flex justify-between text-ok">
+                <dt>Leve 2 ({QTY_PROMO.pct}% off)</dt>
+                <dd className="num">− {formatBRL(totals.qty)}</dd>
+              </div>
+            )}
             {totals.coupon > 0 && (
               <div className="flex justify-between text-ok">
                 <dt>Cupom {coupon}</dt>

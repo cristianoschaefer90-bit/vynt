@@ -4,6 +4,7 @@ import { useEffect, useSyncExternalStore } from "react";
 import { productBySlug, variantBySku } from "@/data/catalogo";
 import { couponDiscount, findCoupon } from "@/lib/coupons";
 import { STORE } from "@/lib/config";
+import { qtyDiscount } from "@/lib/promo";
 import { useCart } from "@/lib/cart";
 
 // Estoque e preço "vivos" (ajustes do admin), buscados do servidor.
@@ -61,7 +62,9 @@ export function useCartTotals() {
     count += line.qty;
   }
   const c = findCoupon(code);
-  const coupon = c ? couponDiscount(c, subtotal) : 0;
-  const pixTotal = subtotal - coupon - Math.floor(((subtotal - coupon) * STORE.pixDiscountPct) / 100);
-  return { subtotal, coupon, couponObj: coupon ? c : null, pixTotal, count, prices, stock: l.stock, inactive: l.inactive };
+  const qty = qtyDiscount(subtotal, count);
+  const coupon = c ? couponDiscount(c, subtotal - qty) : 0;
+  const net = subtotal - qty - coupon;
+  const pixTotal = net - Math.floor((net * STORE.pixDiscountPct) / 100);
+  return { subtotal, qty, coupon, net, couponObj: coupon ? c : null, pixTotal, count, prices, stock: l.stock, inactive: l.inactive };
 }

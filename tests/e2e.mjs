@@ -18,6 +18,7 @@ const step = async (name, fn) => {
   }
 };
 
+let totalCheckout = "";
 await step("abre produto", async () => {
   await page.goto(base + "/p/trama", { waitUntil: "networkidle" });
   await page.getByRole("heading", { level: 1, name: "Trama Low" }).waitFor();
@@ -40,6 +41,10 @@ await step("adiciona nº 40 e abre a sacola", async () => {
 await step("troca numeração dentro da sacola", async () => {
   await page.getByRole("dialog").getByLabel("Numeração").selectOption({ label: "Nº 41" });
   await page.getByRole("dialog").getByLabel("Numeração").locator("option:checked").filter({ hasText: "41" }).waitFor({ state: "attached" });
+});
+await step("leve 2: desconto aparece com 2 pares", async () => {
+  await page.getByRole("dialog").getByRole("button", { name: "Aumentar quantidade" }).click();
+  await page.getByRole("dialog").getByText(/Leve 2 \(/).waitFor();
 });
 await step("aplica cupom", async () => {
   await page.getByRole("button", { name: "Tenho um cupom" }).click();
@@ -65,12 +70,16 @@ await step("preenche e envia", async () => {
   await page.getByRole("textbox", { name: "Número", exact: true }).fill("120");
   await page.getByText("Motoboy Vynt").waitFor();
   await page.screenshot({ path: `${out}-checkout.png`, fullPage: true });
+  totalCheckout = (await page.getByRole("button", { name: /Gerar Pix/ }).textContent()).split("·")[1].trim();
   await page.getByRole("button", { name: /Gerar Pix/ }).click();
   await page.waitForURL("**/pedido/**", { timeout: 20000 });
 });
 await step("pedido com Pix", async () => {
   await page.getByRole("heading", { name: "Falta só o Pix." }).waitFor();
+  await page.getByText("Leve 2", { exact: true }).waitFor();
   await page.getByRole("button", { name: "Copiar código Pix" }).waitFor();
+  const shown = (await page.locator("#pix-titulo + p").textContent()).trim();
+  if (shown.replace(/\s/g, "") !== totalCheckout.replace(/\s/g, "")) throw new Error(`total diferente: checkout ${totalCheckout} vs pedido ${shown}`);
   await page.screenshot({ path: `${out}-pedido.png`, fullPage: true });
 });
 const pedidoUrl = page.url();

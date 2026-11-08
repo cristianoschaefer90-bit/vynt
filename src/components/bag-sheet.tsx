@@ -9,6 +9,8 @@ import { cart, useCart } from "@/lib/cart";
 import { variantBySku } from "@/data/catalogo";
 import { formatBRL } from "@/lib/money";
 import { STORE } from "@/lib/config";
+import { QTY_PROMO } from "@/lib/promo";
+import { FreeShippingBar } from "./free-shipping-bar";
 import { CouponField } from "./coupon-field";
 import { useCartTotals } from "./use-cart-totals";
 
@@ -168,12 +170,19 @@ export function BagSheet() {
                 </ul>
 
                 <div className="space-y-4 border-t border-linha px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-5">
+                  <FreeShippingBar subtotal={totals.subtotal} count={totals.count} />
                   <CouponField />
                   <dl className="space-y-1.5 text-sm">
                     <div className="flex justify-between">
                       <dt>Subtotal</dt>
                       <dd className="num">{formatBRL(totals.subtotal)}</dd>
                     </div>
+                    {totals.qty > 0 && (
+                      <div className="flex justify-between text-ok">
+                        <dt>Leve 2 ({QTY_PROMO.pct}% off)</dt>
+                        <dd className="num">− {formatBRL(totals.qty)}</dd>
+                      </div>
+                    )}
                     {totals.coupon > 0 && (
                       <div className="flex justify-between text-ok">
                         <dt>Cupom</dt>
@@ -186,7 +195,7 @@ export function BagSheet() {
                     </div>
                   </dl>
                   <Link href="/checkout" className="btn btn-tinta w-full" onClick={() => cart.open(false)}>
-                    Finalizar compra · {formatBRL(totals.subtotal - totals.coupon)}
+                    Finalizar compra · {formatBRL(totals.net)}
                   </Link>
                   <p className="text-center text-xs text-tinta-3">Frete calculado no próximo passo. Troca de número grátis em {STORE.freeExchangeDays} dias.</p>
                 </div>
