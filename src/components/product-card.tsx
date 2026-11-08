@@ -4,6 +4,7 @@ import type { Product } from "@/data/catalogo";
 import { formatBRL, installments } from "@/lib/money";
 import { STORE } from "@/lib/config";
 import { QuickAdd } from "./quick-add";
+import { QTY_PROMO } from "@/lib/promo";
 
 export function ProductCard({
   p,
@@ -47,6 +48,11 @@ export function ProductCard({
             </>
           )}
         </div>
+        {!outOfStock && (
+          <span className="pointer-events-none absolute bottom-14 left-3 bg-papel/90 px-2 py-1 text-[0.625rem] uppercase leading-tight tracking-[0.1em] md:bottom-3 md:group-hover:opacity-0">
+            −{QTY_PROMO.pct}% levando 2
+          </span>
+        )}
         {!outOfStock && <QuickAdd name={p.name} variants={p.variants} stock={stock} />}
       </div>
       <Link href={`/p/${p.slug}`} className="block">

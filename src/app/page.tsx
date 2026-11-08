@@ -13,6 +13,8 @@ import { ProductCard } from "@/components/product-card";
 import { FirstCoupon } from "@/components/home/first-coupon";
 import { SameDay } from "@/components/same-day";
 import { Benefits } from "@/components/benefits";
+import { HeroSlider } from "@/components/home/hero-slider";
+import { QTY_PROMO } from "@/lib/promo";
 
 export const revalidate = 60;
 
@@ -33,6 +35,25 @@ function HeroPicture() {
   );
 }
 
+function PromoSlide({ img, alt, kicker, title, text, cta }: { img: string; alt: string; kicker: string; title: string; text: string; cta: { href: string; label: string } }) {
+  return (
+    <div className="h-full">
+      <Image src={img} alt={alt} fill sizes="100vw" className="object-cover" />
+      <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-tinta/80 via-tinta/20 to-transparent md:bg-gradient-to-r md:from-tinta/75 md:via-tinta/25" />
+      <div className="absolute inset-x-0 bottom-0">
+        <div className="mx-auto max-w-[1440px] px-4 pb-8 md:px-8 md:pb-12">
+          <p className="rotulo !text-papel/80">{kicker}</p>
+          <p className="mt-3 max-w-3xl font-serif text-mega tracking-[-0.02em] text-papel">{title}</p>
+          <p className="mt-4 max-w-md text-papel/85">{text}</p>
+          <Link href={cta.href} className="btn mt-6 bg-papel text-tinta hover:bg-telha hover:text-white">
+            {cta.label}
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default async function Home() {
   const all = await liveCatalog();
   const hero = all.find((p) => p.slug === HERO_SLUG) ?? all[0];
@@ -47,30 +68,74 @@ export default async function Home() {
       {/* ───── Banner principal (foto de uso) ───── */}
       <section aria-labelledby="capa-titulo" className="relative">
         <div className="relative h-[calc(100svh-var(--barra)-32px)] min-h-[520px] max-h-[900px] overflow-hidden bg-tinta">
-          <HeroPicture />
-          <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-tinta/75 via-tinta/10 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0">
-            <div className="mx-auto max-w-[1440px] px-4 pb-8 md:px-8 md:pb-12">
-              <p className="rotulo !text-papel/80">Edição nº 11 · Vale do Paranhana</p>
-              <MaskTitle as="h1" immediate className="mt-3 max-w-4xl font-serif text-mega tracking-[-0.02em] text-papel">
-                <span id="capa-titulo">Pediu agora, calça hoje.</span>
-              </MaskTitle>
-              <Reveal immediate delay={0.3} className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <Magnetic>
-                  <Link href="/loja?ordem=novos" className="btn bg-papel text-tinta hover:bg-telha hover:text-white">
-                    Ver lançamentos
-                  </Link>
-                </Magnetic>
-                <Link href={`/p/${hero.slug}`} className="btn border border-papel/60 text-papel hover:bg-papel hover:text-tinta">
-                  {hero.name} · {formatBRL(hero.priceCents)}
-                </Link>
-              </Reveal>
+          <HeroSlider labels={["Entrega no mesmo dia", `Leve 2, ganhe ${QTY_PROMO.pct}%`, "Troca na porta"]}>
+            <div className="h-full">
+              <HeroPicture />
+              <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-tinta/75 via-tinta/10 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0">
+                <div className="mx-auto max-w-[1440px] px-4 pb-8 md:px-8 md:pb-12">
+                  <p className="rotulo !text-papel/80">Edição nº 11 · Vale do Paranhana</p>
+                  <MaskTitle as="h1" immediate className="mt-3 max-w-4xl font-serif text-mega tracking-[-0.02em] text-papel">
+                    <span id="capa-titulo">Pediu agora, calça hoje.</span>
+                  </MaskTitle>
+                  <Reveal immediate delay={0.3} className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <Magnetic>
+                      <Link href="/loja?ordem=novos" className="btn bg-papel text-tinta hover:bg-telha hover:text-white">
+                        Ver lançamentos
+                      </Link>
+                    </Magnetic>
+                    <Link href={`/p/${hero.slug}`} className="btn border border-papel/60 text-papel hover:bg-papel hover:text-tinta">
+                      {hero.name} · {formatBRL(hero.priceCents)}
+                    </Link>
+                  </Reveal>
+                </div>
+              </div>
             </div>
-          </div>
+            <PromoSlide
+              img="/lifestyle/linha.webp"
+              alt="Pessoa experimentando o Linha Court num banco de madeira, com a caixa aberta ao lado"
+              kicker="Promoção da loja"
+              title={`Leve 2 pares, ganhe ${QTY_PROMO.pct}%.`}
+              text="Desconto automático na sacola, somado ao Pix. Vale para qualquer modelo."
+              cta={{ href: "/loja?ordem=vendidos", label: "Escolher os dois" }}
+            />
+            <PromoSlide
+              img="/editorial/entrega.webp"
+              alt="Entregador passando uma caixa de tênis na porta de uma casa de madeira"
+              kicker="Troca de número na porta"
+              title="Não serviu? O motoboy troca."
+              text={`Em até ${STORE.freeExchangeDays} dias, sem custo no Vale do Paranhana. Leva o número novo e busca o outro na mesma viagem.`}
+              cta={{ href: "/trocas", label: "Como funciona a troca" }}
+            />
+          </HeroSlider>
         </div>
       </section>
 
       <Benefits />
+
+      {/* ───── Atalhos ───── */}
+      <nav aria-label="Atalhos da loja" className="mx-auto max-w-[1440px] px-4 pt-6 md:px-8">
+        <ul className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 text-sm [scrollbar-width:none] md:mx-0 md:flex-wrap md:px-0 [&::-webkit-scrollbar]:hidden">
+          {[
+            ["Mais vendidos", "/loja?ordem=vendidos"],
+            ["Lançamentos", "/loja?ordem=novos"],
+            ["Corrida", "/loja/corrida"],
+            ["Casual", "/loja/casual"],
+            ["Streetwear", "/loja/streetwear"],
+            ["Claros", "/loja?cor=claro"],
+            ["Escuros", "/loja?cor=escuro"],
+            ["Até R$ 350", "/loja?preco=ate-350"],
+            ["Nº 34 a 36", "/loja?tamanho=34&tamanho=35&tamanho=36"],
+            ["Nº 42 a 44", "/loja?tamanho=42&tamanho=43&tamanho=44"],
+          ].map(([l, h]) => (
+            <li key={h} className="shrink-0">
+              <Link href={h} className="inline-flex min-h-11 items-center border border-linha px-4 hover:border-tinta hover:bg-tinta hover:text-papel">
+                {l}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
 
       {/* ───── Coleções ───── */}
       <section aria-label="Coleções" className="mx-auto mt-4 grid max-w-[1440px] gap-4 px-4 md:mt-6 md:grid-cols-3 md:px-8">
