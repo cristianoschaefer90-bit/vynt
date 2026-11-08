@@ -10,19 +10,6 @@ export function Footer() {
   if (path.startsWith("/admin") || path.startsWith("/checkout")) return null;
   return (
     <footer className="mt-24">
-      <ul aria-label="Por que comprar na Vynt" className="mx-auto grid max-w-[1440px] grid-cols-2 gap-px border-y border-linha bg-linha md:grid-cols-4">
-        {[
-          ["Original com nota", "Todos os pares com nota fiscal."],
-          ["Troca grátis", `Em ${STORE.freeExchangeDays} dias, sem burocracia.`],
-          ["Entrega hoje", "Motoboy no Vale do Paranhana."],
-          ["Compra segura", "Pagamento por Pix ou link oficial."],
-        ].map(([t, d]) => (
-          <li key={t} className="bg-papel px-4 py-6 md:px-8">
-            <p className="font-medium">{t}</p>
-            <p className="mt-1 text-sm text-tinta-3">{d}</p>
-          </li>
-        ))}
-      </ul>
       <div className="bg-tinta text-papel">
       <div className="mx-auto grid max-w-[1440px] gap-12 px-4 pb-10 pt-16 md:grid-cols-12 md:px-8">
         <div className="md:col-span-6">

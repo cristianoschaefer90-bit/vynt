@@ -12,6 +12,7 @@ import { BestSellers } from "@/components/home/best-sellers";
 import { ProductCard } from "@/components/product-card";
 import { FirstCoupon } from "@/components/home/first-coupon";
 import { SameDay } from "@/components/same-day";
+import { Benefits } from "@/components/benefits";
 
 export const revalidate = 60;
 
@@ -68,6 +69,8 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      <Benefits />
 
       {/* ───── Coleções ───── */}
       <section aria-label="Coleções" className="mx-auto mt-4 grid max-w-[1440px] gap-4 px-4 md:mt-6 md:grid-cols-3 md:px-8">
