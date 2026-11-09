@@ -37,6 +37,8 @@ export interface Order {
   status: OrderStatus;
   history: { status: OrderStatus; at: string }[];
   customer: { name: string; phone: string; email?: string };
+  /** conta do cliente (quando comprou logado ou vinculou depois) */
+  userId?: string;
   delivery: {
     method: "motoboy" | "correios_pac" | "correios_sedex" | "retirada";
     label: string;
@@ -57,9 +59,33 @@ export interface Order {
   tracking?: string;
 }
 
+export interface User {
+  id: string;
+  name: string;
+  email: string; // minúsculo
+  phone: string; // só dígitos
+  passHash: string; // scrypt, base64
+  salt: string;
+  createdAt: string;
+}
+
+export interface Address {
+  id: string;
+  label: string;
+  cep: string;
+  street: string;
+  number: string;
+  complement?: string;
+  district: string;
+  city: string;
+  uf: string;
+}
+
 interface DB {
   seq: number;
   orders: Order[];
+  users?: User[];
+  addresses?: Record<string, Address[]>; // userId → endereços
   stock: Record<string, number>; // sku → estoque (sobrepõe o catálogo)
   products: Record<string, { priceCents?: number; active?: boolean }>;
 }
@@ -212,5 +238,74 @@ export function setProduct(slug: string, patch: { priceCents?: number; active?: 
   return tx((db) => {
     if (!productBySlug.has(slug)) throw new Error("NOT_FOUND");
     db.products[slug] = { ...db.products[slug], ...patch };
+  });
+}
+
+
+// ───────────── Contas de cliente ─────────────
+
+export async function findUserByEmail(email: string) {
+  return (await load()).users?.find((u) => u.email === email.trim().toLowerCase()) ?? null;
+}
+
+export async function getUser(id: string) {
+  return (await load()).users?.find((u) => u.id === id) ?? null;
+}
+
+export function createUser(u: Omit<User, "id" | "createdAt">) {
+  return tx((db) => {
+    db.users ??= [];
+    if (db.users.some((x) => x.email === u.email)) throw new Error("EMAIL_TAKEN");
+    const user: User = { ...u, id: randomUUID(), createdAt: new Date().toISOString() };
+    db.users.push(user);
+    return user;
+  });
+}
+
+export function updateUser(id: string, patch: Partial<Pick<User, "name" | "phone">>) {
+  return tx((db) => {
+    const u = db.users?.find((x) => x.id === id);
+    if (!u) throw new Error("NOT_FOUND");
+    Object.assign(u, patch);
+    return u;
+  });
+}
+
+export async function ordersOfUser(userId: string) {
+  return (await load()).orders.filter((o) => o.userId === userId);
+}
+
+/** Vincula pedidos à conta. Só aceita quem prova posse do pedido (código + token secreto). */
+export function claimOrders(userId: string, proofs: { code: number; token: string }[]) {
+  return tx((db) => {
+    let n = 0;
+    for (const p of proofs.slice(0, 50)) {
+      const o = db.orders.find((x) => x.code === p.code);
+      if (!o || o.userId) continue;
+      const a = Buffer.from(o.token), b = Buffer.from(String(p.token));
+      if (a.length === b.length && timingSafeEqual(a, b)) {
+        o.userId = userId;
+        n++;
+      }
+    }
+    return n;
+  });
+}
+
+export async function addressesOf(userId: string) {
+  return (await load()).addresses?.[userId] ?? [];
+}
+
+export function saveAddress(userId: string, a: Address) {
+  return tx((db) => {
+    db.addresses ??= {};
+    const list = (db.addresses[userId] ?? []).filter((x) => x.id !== a.id);
+    db.addresses[userId] = [a, ...list].slice(0, 6);
+  });
+}
+
+export function removeAddress(userId: string, id: string) {
+  return tx((db) => {
+    if (db.addresses?.[userId]) db.addresses[userId] = db.addresses[userId].filter((x) => x.id !== id);
   });
 }

@@ -21,7 +21,7 @@ npm run build && npm start
 | Sacola lateral persistente (troca de número, cupom) | qualquer página |
 | Checkout de 1 página: Pix com desconto, cartão por link, WhatsApp | `/checkout` |
 | Pedido confirmado + status (atualiza sozinho) + QR Pix | `/pedido/[nº]?t=…` |
-| Minha conta: pedidos, endereços, dados (salvos no aparelho) | `/conta` |
+| Minha conta: cadastro/login (e-mail e senha), pedidos, endereços, dados | `/conta` |
 | Painel: pedidos/status, estoque por número, preço e "à venda" | `/admin` |
 
 Segurança: preço, cupom, frete e estoque são **recalculados no servidor** (`src/app/actions/checkout.ts`); o navegador só manda SKU e quantidade. Painel com senha + cookie assinado (HMAC, httpOnly, SameSite=Strict), limite de tentativas, honeypot no checkout, cabeçalhos de segurança em `next.config.ts`.
@@ -43,12 +43,13 @@ Tudo que precisa do dado real está marcado com `// TROCAR`. Quando tudo for rea
 
 - `ADMIN_PASSWORD` (8+ caracteres) e `ADMIN_SECRET` — obrigatórias em produção para o painel.
 - `ORDER_SECRET` — assina o link do pedido.
+- `SESSION_SECRET` — assina a sessão do cliente (se faltar, usa ORDER_SECRET).
 - `PIX_KEY`, `PIX_MERCHANT_NAME`, `PIX_MERCHANT_CITY` — gera o QR Pix (BR Code) com o valor do pedido.
 - `NEXT_PUBLIC_SITE_URL` — URL pública (SEO).
 
 ## Limites desta versão (sem banco)
 
-- Pedidos e ajustes de estoque ficam em `.data/db.json` (local). **Na Vercel** isso é temporário (`/tmp`): o cliente sempre vê o pedido pelo link assinado, mas o painel só mostra o que caiu na mesma instância. Para produção, ligue o Supabase.
+- Pedidos, **contas de cliente**, endereços e ajustes de estoque ficam em `.data/db.json` (local). Senhas com scrypt; sessão em cookie assinado (httpOnly). **Na Vercel** isso é temporário (`/tmp`): o cliente sempre vê o pedido pelo link assinado, mas o painel só mostra o que caiu na mesma instância. Para produção, ligue o Supabase.
 - Pix é **estático** (QR com valor); a baixa é manual no painel. Para confirmação automática, ligar Mercado Pago (Pix + cartão com webhook).
 - Correios: valor **estimado** por região. Para cotação real, ligar Melhor Envio ou contrato Correios em `src/lib/shipping.ts`.
 

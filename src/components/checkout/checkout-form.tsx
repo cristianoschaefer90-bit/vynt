@@ -10,6 +10,7 @@ import { formatBRL, installments } from "@/lib/money";
 import { STORE } from "@/lib/config";
 import { QTY_PROMO } from "@/lib/promo";
 import { placeOrder, quoteShipping } from "@/app/actions/checkout";
+import { signup } from "@/app/actions/account";
 import { CouponField } from "@/components/coupon-field";
 import { useCartTotals } from "@/components/use-cart-totals";
 import { Magnetic } from "@/components/motion";
@@ -30,7 +31,10 @@ const maskCep = (v: string) => {
   return d.length > 5 ? `${d.slice(0, 5)}-${d.slice(5)}` : d;
 };
 
-export function CheckoutForm() {
+type Customer = { id: string; name: string; email: string; phone: string } | null;
+type ServerAddress = { id: string; label: string; cep: string; street: string; number: string; complement?: string; district: string; city: string; uf: string };
+
+export function CheckoutForm({ customer = null, savedAddresses = [] }: { customer?: Customer; savedAddresses?: ServerAddress[] }) {
   const router = useRouter();
   const hydrated = useHydrated();
   const lines = useCart((s) => s.lines);
@@ -54,6 +58,8 @@ export function CheckoutForm() {
   const [pay, setPay] = useState<Pay>("pix");
   const [notes, setNotes] = useState("");
   const [saveData, setSaveData] = useState(true);
+  const [createAccount, setCreateAccount] = useState(false);
+  const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formErr, setFormErr] = useState<string | null>(null);
   const [cepPending, startCep] = useTransition();
@@ -65,10 +71,11 @@ export function CheckoutForm() {
   useEffect(() => {
     if (!hydrated || filled.current) return;
     filled.current = true;
-    if (profile.name) setName(profile.name);
-    if (profile.phone) setPhone(maskPhone(profile.phone));
-    if (profile.email) setEmail(profile.email);
-    const a = saved[0];
+    const src = customer ?? profile;
+    if (src.name) setName(src.name);
+    if (src.phone) setPhone(maskPhone(src.phone));
+    if (src.email) setEmail(src.email);
+    const a = savedAddresses[0] ?? saved[0];
     if (a) {
       setCep(maskCep(a.cep));
       setNumber(a.number);
@@ -131,6 +138,10 @@ export function CheckoutForm() {
     if (name.trim().length < 3) errs.name = "Digite seu nome completo";
     const ph = phone.replace(/\D/g, "");
     if (ph.length < 10) errs.phone = "WhatsApp com DDD";
+    if (createAccount && !customer) {
+      if (!/^\S+@\S+\.\S+$/.test(email)) errs.email = "Para criar a conta, informe o e-mail";
+      if (password.length < 8 || !/[A-Za-z]/.test(password) || !/\d/.test(password)) errs.password = "Mínimo de 8 caracteres, com letras e números";
+    }
     if (mode === "entrega") {
       if (!quote) errs.cep = "Digite um CEP válido";
       if (!method) errs.delivery = "Escolha a entrega";
@@ -186,6 +197,10 @@ export function CheckoutForm() {
       const url = `/pedido/${r.code}?t=${r.token}${r.snapshot ? `&s=${r.snapshot}` : ""}`;
       cart.saveOrder({ code: r.code, token: r.token, url, totalCents: r.totalCents, createdAt: new Date().toISOString(), items: totals.count });
       cart.clear();
+      if (createAccount && !customer) {
+        // cria a conta e já vincula este pedido (prova: token do pedido)
+        await signup({ name, email, phone: ph, password, proofs: [{ code: r.code, token: r.token }] });
+      }
       router.push(url);
     });
   };
@@ -231,6 +246,42 @@ export function CheckoutForm() {
             </div>
           </div>
           <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden />
+          {customer ? (
+            <p className="text-sm text-tinta-3">Comprando como {customer.email}. O pedido vai aparecer em Minha conta.</p>
+          ) : (
+            <div className="border border-linha bg-white p-4">
+              <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm">
+                <input type="checkbox" className="size-4 accent-tinta" checked={createAccount} onChange={(e) => setCreateAccount(e.target.checked)} />
+                <span>
+                  <span className="font-medium">Criar conta</span> para acompanhar meus pedidos em qualquer aparelho
+                </span>
+              </label>
+              {createAccount && (
+                <div className="mt-3">
+                  <label htmlFor="f-password" className="mb-1.5 block text-sm">
+                    Crie uma senha
+                  </label>
+                  <input
+                    id="f-password"
+                    type="password"
+                    autoComplete="new-password"
+                    className="campo"
+                    value={password}
+                    onChange={(e) => { setPassword(e.target.value.slice(0, 72)); clear("password"); }}
+                    {...inv("password")}
+                  />
+                  {err("password") ?? <p className="mt-1.5 text-xs text-tinta-3">Mínimo de 8 caracteres, com letras e números. Usamos o e-mail acima para entrar.</p>}
+                </div>
+              )}
+              <p className="mt-2 text-xs text-tinta-3">
+                Já tem conta?{" "}
+                <a href="/conta" className="underline underline-offset-4">
+                  Entre aqui
+                </a>{" "}
+                e volte para a sacola.
+              </p>
+            </div>
+          )}
         </fieldset>
 
         {/* entrega */}

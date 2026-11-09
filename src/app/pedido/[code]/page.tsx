@@ -10,6 +10,9 @@ import { formatBRL } from "@/lib/money";
 import { waLink } from "@/lib/whatsapp";
 import { CopyButton } from "@/components/order/copy-button";
 import { AutoRefresh } from "@/components/order/auto-refresh";
+import { currentCustomer } from "@/lib/customer-auth";
+import { AuthPanel } from "@/components/account/auth-panel";
+import { LinkOrderButton } from "@/components/order/link-order";
 
 export const metadata: Metadata = { title: "Seu pedido", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -43,6 +46,7 @@ export default async function Pedido({ params, searchParams }: { params: Promise
     );
   }
 
+  const me = await currentCustomer();
   const pickup = order.delivery.method === "retirada";
   const statusIdx = order.status === "pronto_retirada" ? 3 : STEPS.findIndex((s) => s.key === order.status);
   const cancelled = order.status === "cancelado";
@@ -119,6 +123,22 @@ export default async function Pedido({ params, searchParams }: { params: Promise
                   );
                 })}
               </ol>
+            </section>
+          )}
+
+          {!order.userId && order.token && (
+            <section aria-labelledby="salvar-titulo" className="border border-linha bg-white p-6">
+              <h2 id="salvar-titulo" className="font-serif text-3xl">
+                Salve este pedido na sua conta
+              </h2>
+              <p className="mt-1 text-sm text-tinta-2">Acompanhe todos os pedidos de qualquer celular e compre mais rápido na próxima.</p>
+              <div className="mt-5">
+                {me ? (
+                  <LinkOrderButton code={order.code} token={order.token} />
+                ) : (
+                  <AuthPanel defaultMode="criar" initial={{ name: order.customer.name, email: order.customer.email, phone: order.customer.phone }} />
+                )}
+              </div>
             </section>
           )}
 

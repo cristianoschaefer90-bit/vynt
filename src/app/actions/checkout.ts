@@ -10,6 +10,7 @@ import { cleanCep, lookupCep, optionsFor, PICKUP, type ShippingOption } from "@/
 import { createOrder, effectiveProduct, StockError, stockOf, type OrderItem } from "@/lib/store";
 import { rateLimit } from "@/lib/rate-limit";
 import { signOrder } from "@/lib/order-snapshot";
+import { currentCustomer } from "@/lib/customer-auth";
 
 const cartSchema = z
   .array(z.object({ sku: z.string().max(40), qty: z.number().int().min(1).max(10) }))
@@ -141,7 +142,9 @@ export async function placeOrder(input: unknown): Promise<PlaceOrderResult> {
   const totalCents = subtotalCents - qtyCents - couponCents - pixCents + shipping.priceCents;
 
   try {
+    const me = await currentCustomer();
     const order = await createOrder({
+      userId: me?.id,
       customer: { name: d.name, phone: d.phone, email: d.email || undefined },
       delivery: { method: shipping.method, label: shipping.label, eta: shipping.eta, address },
       payment: d.payment,
